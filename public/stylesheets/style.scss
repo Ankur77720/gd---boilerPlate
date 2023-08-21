@@ -1,0 +1,41 @@
+* {
+    margin: 0%;
+    padding: 0%;
+    box-sizing: border-box;
+    user-select: none;
+    user-zoom: fixed;
+
+}
+
+html,
+body {
+    height: 100%;
+    width: 100%;
+}
+
+#main {
+    height: 100%;
+    width: 100%;
+    display: flex;
+
+
+    .left {
+        background-color: #ecf4ff !important;
+
+        .trash {
+            cursor: pointer;
+            transition: all 0.3s linear;
+
+            &:hover {
+                background-color: #e3e9f3;
+            }
+        }
+    }
+
+    .right {
+        nav {
+            background-color: #ecf4ff !important;
+
+        }
+    }
+}

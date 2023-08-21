@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang='en'>
+
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <title>Bootstrap demo</title>
+  <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi' crossorigin='anonymous'>
+  <link href='https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css' rel='stylesheet'>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+  <style>
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    small {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Upload file Modal -->
+  <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="uploadModalLabel">Upload File</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form action="/upload" method="post" enctype="multipart/form-data" class="mb-4">
+            <input type="file" name="file" id="fileInput" multiple>
+            <button type="submit" class="btn btn-primary">Upload</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Upload file Modal -->
+
+  <!-- create folder -->
+  <div class="modal fade" id="createFolderModal" tabindex="-1" aria-labelledby="createFolderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="createFolderModalLabel">Create Folder</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="createFolderForm">
+            <div class="mb-3">
+              <label for="folderName" class="form-label">Folder Name</label>
+              <input type="text" class="form-control" id="folderName" name="folderName" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- create folder -->
+
+
+  <div id="main">
+    <div class="left p-2 ps-4 d-flex flex-column gap-2 col-2 h-100 pe-4">
+      <a href="/" class="logo d-flex gap-2 align-items-center text-decoration-none text-dark">
+        <img src="/images/drive.png" height="40" width="40" alt="">
+        <h3 class="fw-normal opacity-75">Drive</h3>
+      </a>
+      <div class="dropdown">
+        <button class="newItem w-100 d-flex gap-2 align-items-center justify-content-between border-0 rounded-2 p-2 mt-3 dropdown-toggle" style="box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12);" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <span class="d-flex gap-2">
+            <img src="/images/add.png" alt="">
+            <p>New</p>
+          </span>
+        </button>
+        <div class="dropdown-menu w-100">
+          <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#uploadModal"> <i class="ri-file-fill"></i> Upload file</button>
+          <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createFolderModal"> <i class="ri-folder-fill"></i> Create folder</button>
+        </div>
+      </div>
+      <div onclick="fetchRecycleBinAndDisplayFolderContents()" class="trash p-2 d-flex align-items-center justify-content-center rounded-5 mt-auto gap-2">
+        <i class="ri-delete-bin-fill"></i>
+        <p>Trash</p>
+      </div>
+
+    </div>
+    <div class="right h-100 col-10">
+      
+    </div>
+  </div>
+  <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js' integrity='sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3' crossorigin='anonymous'></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js" integrity="sha512-uMtXmF28A2Ab/JJO2t/vYhlaa/3ahUOgj1Zf27M5rOo8/+fcTUVH0/E0ll68njmjrLqOBjXM3V9NiPFL5ywWPQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+    let forRecycleBin = false
+    function displayContent(folderContents) {
+      console.log(folderContents)
+      const contentContainer = document.querySelector('.content');
+      contentContainer.innerHTML = ''; // Clear previous contents
+
+      const table = document.createElement('table');
+      table.classList.add('table');
+
+      const thead = document.createElement('thead');
+      const theadRow = document.createElement('tr');
+      const headings = ['Name', 'Owner', 'Last modified', 'Size', ''];
+
+      for (const heading of headings) {
+        const th = document.createElement('th');
+        th.textContent = heading;
+        theadRow.appendChild(th);
+      }
+      thead.appendChild(theadRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+
+      for (const content of folderContents) {
+        const tr = document.createElement('tr');
+
+        // Item name and icon
+        const itemNameCell = document.createElement('td');
+        const itemNameLink = document.createElement('a');
+        itemNameLink.className = 'text-decoration-none text-dark';
+
+        if (content.itemType === 'file') {
+          itemNameLink.href = `/download/${content.name}`;
+          itemNameLink.target = '_blank';
+          const fileIcon = document.createElement('i');
+          fileIcon.className = 'ri-file-fill me-2';
+          itemNameLink.appendChild(fileIcon);
+          itemNameLink.appendChild(document.createTextNode(content.originalFilename));
+        } else if (content.itemType === 'folder') {
+          itemNameLink.href = 'javascript:void(0);';
+          itemNameLink.setAttribute('onclick', `openFolder('${content._id}')`);
+          const folderIcon = document.createElement('i');
+          folderIcon.className = 'ri-folder-fill me-2';
+          itemNameLink.appendChild(folderIcon);
+          itemNameLink.appendChild(document.createTextNode(content.name));
+        }
+        itemNameCell.appendChild(itemNameLink);
+        tr.appendChild(itemNameCell);
+
+        // Owner
+        const ownerCell = document.createElement('td');
+        ownerCell.textContent = content.owner;
+        tr.appendChild(ownerCell);
+
+        // Last modified
+        const lastModifiedCell = document.createElement('td');
+        lastModifiedCell.textContent = content.lastModified;
+        tr.appendChild(lastModifiedCell);
+
+        // Size
+        const sizeCell = document.createElement('td');
+        sizeCell.textContent = content.size;
+        tr.appendChild(sizeCell);
+
+        // Download link for files
+        const downloadCell = document.createElement('td');
+        if (content.itemType === 'file') {
+          const downloadLink = document.createElement('a');
+          downloadLink.href = `/download/${content.name}`;
+          downloadLink.className = 'text-decoration-none text-dark';
+          downloadLink.target = '_blank';
+          downloadLink.download = `${content.originalFilename}`;
+          const downloadIcon = document.createElement('i');
+          downloadIcon.className = 'ri-download-fill';
+          downloadLink.appendChild(downloadIcon);
+          downloadCell.appendChild(downloadLink);
+        }
+
+        // Delete button for files
+
+        if (content.itemType === 'file') {
+          const deleteButton = document.createElement('button');
+          deleteButton.className = 'btn text-dark';
+          const deleteIcon = document.createElement('i');
+          if (forRecycleBin) {
+            deleteIcon.className = 'ri-recycle-line';
+            deleteButton.setAttribute('onclick', `restoreFile('${content._id}')`);
+          } else {
+            deleteButton.setAttribute('onclick', `deleteFile('${content._id}')`);
+            deleteIcon.className = 'ri-delete-bin-6-fill';
+          }
+          deleteButton.appendChild(deleteIcon);
+          downloadCell.appendChild(deleteButton);
+          downloadCell.classList.add('align-item-center')
+          downloadCell.classList.add('justify-content-center')
+          tr.appendChild(downloadCell);
+        }
+
+
+
+        tbody.appendChild(tr);
+      }
+
+      table.appendChild(tbody);
+      contentContainer.appendChild(table);
+    }
+  </script>
+
+</body>
+
+</html>
