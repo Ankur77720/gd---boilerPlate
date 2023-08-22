@@ -80,7 +80,7 @@ router.get('/logout', (req, res, next) => {
 /* GET home page. */
 router.get('/', isloggedIn, async (req, res) => {
   try {
-    res.render('index', { title: 'Express', userRootFolder: [] });
+    res.render('index');
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error retrieving user root folder', err });
