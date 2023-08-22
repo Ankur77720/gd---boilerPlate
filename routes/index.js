@@ -37,7 +37,6 @@ router.post('/register', async (req, res, next) => {
     const registeredUser = await users.register(newUser, req.body.password);
 
     // Update the user's root folder field with the default folder's ID
-    registeredUser.rootFolder = defaultFolder._id;
     await registeredUser.save();
 
     // Authenticate the user and redirect after successful registration
